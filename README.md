@@ -4,6 +4,8 @@ A small but complete REST API built with **FastAPI**, **SQLAlchemy**, **Alembic*
 
 It is a learning and interview reference. Every section explains *what* a piece does and *why* it is used, so a developer new to FastAPI can read the code and understand the reasoning behind it.
 
+> **Starting a new project with this structure?** Copy [`template/fastapi-starter/`](template/fastapi-starter/) (pinned versions, MySQL and SQL Server ready) and follow [docs/NEW_PROJECT_GUIDE.md](docs/NEW_PROJECT_GUIDE.md).
+
 ---
 
 ## Table of contents

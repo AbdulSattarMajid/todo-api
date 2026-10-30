@@ -1,0 +1,51 @@
+# Run the API + SQL Server together:  docker compose -f docker-compose.mssql.yml up --build
+services:
+  db:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_PID: Developer   # free edition for development
+      MSSQL_SA_PASSWORD: ${MSSQL_SA_PASSWORD:-YourStr0ng!Passw0rd}
+    ports:
+      - "1434:1433"   # host 1434 so it doesn't clash with a locally installed SQL Server
+    volumes:
+      - mssql_data:/var/opt/mssql
+    healthcheck:
+      # $$ passes "$" through to the container shell, which reads its own env var.
+      test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -C -S localhost -U sa -P \"$$MSSQL_SA_PASSWORD\" -b -Q 'SELECT 1' -o /dev/null"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+      start_period: 20s
+
+  # SQL Server has no "create this database on first start" option (unlike MySQL),
+  # so a one-shot container creates it, then exits.
+  db-init:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    environment:
+      MSSQL_SA_PASSWORD: ${MSSQL_SA_PASSWORD:-YourStr0ng!Passw0rd}
+      MSSQL_DATABASE: ${MSSQL_DATABASE:-appdb}
+    entrypoint:
+      - /bin/bash
+      - -c
+      - /opt/mssql-tools18/bin/sqlcmd -C -S db -U sa -P "$$MSSQL_SA_PASSWORD" -b -Q "IF DB_ID('$$MSSQL_DATABASE') IS NULL CREATE DATABASE [$$MSSQL_DATABASE]"
+    restart: "no"
+    depends_on:
+      db:
+        condition: service_healthy
+
+  api:
+    build: .
+    restart: on-failure
+    env_file: .env
+    environment:
+      # Inside the compose network the database host is the service name "db"
+      DATABASE_URL: mssql+pyodbc://sa:${MSSQL_SA_PASSWORD:-YourStr0ng!Passw0rd}@db:1433/${MSSQL_DATABASE:-appdb}?driver=ODBC+Driver+18+for+SQL+Server&TrustServerCertificate=yes
+    ports:
+      - "8000:8000"
+    depends_on:
+      db-init:
+        condition: service_completed_successfully
+
+volumes:
+  mssql_data:

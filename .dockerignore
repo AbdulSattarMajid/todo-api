@@ -11,3 +11,5 @@ tests
 Dockerfile
 docker-compose.yml
 README.md
+template
+docs

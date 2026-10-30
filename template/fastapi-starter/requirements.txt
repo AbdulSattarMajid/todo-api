@@ -1,0 +1,26 @@
+# Runtime dependencies — exact versions (this is what the Docker image installs).
+# Full transitive pin set: requirements.lock.txt
+
+# --- Web framework & server ---
+fastapi==0.115.5
+starlette==0.41.3              # fastapi 0.115.5 requires starlette <0.42
+uvicorn[standard]==0.32.1
+gunicorn==26.2.0
+python-multipart==0.0.32       # form parsing for OAuth2PasswordRequestForm
+
+# --- Validation & settings ---
+pydantic==2.10.3
+pydantic-settings==2.16.1
+email-validator==2.3.0         # enables EmailStr
+
+# --- Database: ORM, migrations, drivers ---
+SQLAlchemy==2.0.41
+alembic==1.16.4
+PyMySQL==1.1.1                 # MySQL       -> mysql+pymysql://
+cryptography==45.0.5           # MySQL 8 caching_sha2_password auth
+pyodbc==5.2.0                  # SQL Server  -> mssql+pyodbc:// (needs OS "ODBC Driver 18 for SQL Server")
+
+# --- Security ---
+passlib==1.7.4
+bcrypt==4.0.1                  # keep at 4.0.1: newer bcrypt breaks passlib
+python-jose[cryptography]==3.5.0
