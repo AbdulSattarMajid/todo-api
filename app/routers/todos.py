@@ -38,7 +38,7 @@ def read_todo(user: CurrentUser, db: DbSession, todo_id: int = Path(gt=0)):
 
 @router.put("/{todo_id}", response_model=TodoResponse, status_code=status.HTTP_200_OK)
 def update_todo(todo: TodoRequest, user: CurrentUser, db: DbSession, todo_id: int = Path(gt=0)):
-    db_todo = get_owned_todo_or_404(db, todo_id, user)
+    db_todo = db.query(Todos).filter(Todos.id == todo_id, Todos.owner_id == user.id).first()
     for key, value in todo.model_dump().items():
         setattr(db_todo, key, value)
     db.commit()
